@@ -13,34 +13,36 @@ All projects are executed in a personal lab environment using VMs in VMware Work
 
 ## Projects
 
-1. Rsyslog + Logrotate
 
-2. Docker + Terraform
+## Projects
 
-3. Monitoring (Prometheus + Grafana)
+1. **Rsyslog + Logrotate** → `rsyslog-logrotate`
 
-4. Kubernetes Deployment
+2. **Docker + Terraform** → `docker-terraform`
 
-5. Kubernetes Pods Monitoring
+3. **Monitoring (Prometheus + Grafana)** → `monitoring-prometheus-grafana`
 
-6. NGINX Load Balancer + Reverse Proxy
+4. **Kubernetes Deployment** → `kubernetes-deployment`
 
-7. System Resource Auto-Healing Automation
+5. **Kubernetes Pods Monitoring** → `k8s-pods-monitoring`
 
-8. On-Prem Kubernetes Cluster (kubeadm)
+6. **NGINX Load Balancer + Reverse Proxy** → `nginx-loadbalancer-reverse-proxy`
 
-9. GitOps + ArgoCD (Local Kubernetes)
+7. **System Resources Auto-Healing Automation** → `auto-healing-system`
 
-10. Docker Image Vulnerability Scan
+8. **On-Prem Kubernetes Cluster (kubeadm)** → `kubeadm-cluster`
 
-11. Docker Health Monitoring Dashboard (CLI-Based)
+9. **GitOps + ArgoCD (Local Kubernetes)** → `gitops-argocd`
 
-12. Docker Volume Backup + Restore (Manual Workflow)
+10. **Docker Image Vulnerability Scan** → `docker-image-scan`
 
-13. Docker Image Cleanup & Optimization Automation
+11. **Docker Health Monitoring Dashboard (CLI-Based)** → `docker-health-dashboard`
 
-14. Canary Deployment with NGINX
+12. **Docker Volume Backup + Restore (Manual Workflow)** → `docker-volume-backup`
 
+13. **Docker Image Cleanup & Optimization Automation** → `docker-cleanup-automation`
+
+14. **Canary Deployment with NGINX** → `nginx-canary-deployment`
 
 ---
 
@@ -55,4 +57,4 @@ Each project contains:
 * `screenshots/` → Proof of execution
 * `troubleshooting.md` → Issues and fixes
 
----
+
