@@ -55,4 +55,3 @@ Each project contains:
 * `troubleshooting.md` → Issues and fixes
 
 ---
-# core-projects
