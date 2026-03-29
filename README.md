@@ -1,12 +1,13 @@
 # Core DevOps Projects
 
-This repository have hands-on DevOps projects which i built during my Learning Phase. Here I am trying to keep my hands-on Practise on real-world production environments using Linux-based infrastructure.
+This repository has hands-on DevOps projects that I built during my learning phase. I'm keeping my hands-on practice on real-world production environments using Linux-based infrastructure.
 
 # Objective
 
-To design, build, and manage systems similar to real DevOps Production workflows including automation, monitoring, logging, CI/CD, and deployment strategies.
+To design, build, and manage systems that are similar to real DevOps Production workflows, including automation, monitoring, logging, CI/CD, and deployment strategies.
 
-All projects are executed in a personal lab environment using VM's on VMware Workstation , focusing on practical implementation, troubleshooting and understandingsystem behavior.
+All projects are executed in a personal lab environment using VMs in VMware Workstation, focusing on practical implementation, troubleshooting, and understanding system behavior.
+
 
 ---
 
