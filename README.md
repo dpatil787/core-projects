@@ -50,11 +50,12 @@ All projects are executed in a personal lab environment using VMs in VMware Work
 
 Each project contains:
 
-* `README.md` → Overview and architecture
-* `setup/` → Installation steps
-* `configs/` → Configuration files
-* `scripts/` → Automation scripts
-* `screenshots/` → Proof of execution
-* `troubleshooting.md` → Issues and fixes
+* `README.md` → Overview and architecture,
+Installation steps,
+Configuration files,
+Automation scripts,
+screenshots &
+troubleshooting Notes.
+
 
 
