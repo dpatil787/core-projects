@@ -754,6 +754,9 @@ http://192.168.253.128:9090/targets
 
 `mysql_exporter` status should show as **UP**.
 
+![MySQL Exporter Target](images/11-mysql_exporter.png)
+
+
 ---
 
 ## Step 10 — Add MySQL Dashboard in Grafana
@@ -764,6 +767,8 @@ Open Grafana at `http://192.168.253.128:3000`
 - Select **Prometheus** as data source
 - Run query: `mysql_up`
 - Save dashboard as **MySQL Monitoring**
+
+![MySQL Monitoring Dashboard](images/12-mysqlmonitoring.PNG)
 
 ---
 
