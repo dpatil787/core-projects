@@ -781,16 +781,12 @@ Open Grafana at `http://192.168.253.128:3000`
 | `/etc/prometheus/prometheus.yml` | Prometheus configuration — target added here |
 
 ---
+## Challenges I Faced
 
-## What's Next
-
-This setup can be further extended with:
-- **Replication Monitoring** — add a replica MariaDB server and monitor replication lag
-- **PostgreSQL Exporter** — same approach, monitor PostgreSQL databases
-- **Ansible Automation** — deploy MySQL Exporter across multiple database servers using playbooks
-
----
-
+1. **Grafana Dashboard Import Failed**
+   - Issue: Direct import by ID from grafana.com failed because the VM had no internet access
+   - Fix: Downloaded the JSON file on Windows machine and uploaded it manually to Grafana
+  
 ## Troubleshooting
 
 | Issue | Cause | Fix |
@@ -801,6 +797,14 @@ This setup can be further extended with:
 | mysql_up query returns 0 | MariaDB service not running | `systemctl start mariadb` |
 | Prometheus not scraping mysql target | Config syntax error | `promtool check config /etc/prometheus/prometheus.yml` |
 
----
+## What's Next
+
+This setup can be further extended with:
+- **Replication Monitoring** — add a replica MariaDB server and monitor replication lag
+- **PostgreSQL Exporter** — same approach, monitor PostgreSQL databases
+- **Ansible Automation** — deploy MySQL Exporter across multiple database servers using playbooks
+
+
+
 
 *Document prepared as part of DevOps Home Lab — Linux Server Configuration *
