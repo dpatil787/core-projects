@@ -785,7 +785,7 @@ Open Grafana at `http://192.168.253.128:3000`
 
 1. **Grafana Dashboard Import Failed**
    - Issue: Direct import by ID from grafana.com failed because the VM had no internet access
-   - Fix: Downloaded the JSON file on Windows machine and uploaded it manually to Grafana
+   - Fix: Downloaded the JSON file on a Windows machine and uploaded it manually to Grafana
   
 ## Troubleshooting
 
@@ -804,6 +804,16 @@ This setup can be further extended with:
 - **PostgreSQL Exporter** — same approach, monitor PostgreSQL databases
 - **Ansible Automation** — deploy MySQL Exporter across multiple database servers using playbooks
 
+## Exporters commonly used in the production environment.
+
+| Priority | Exporter | When to Use |
+|----------|----------|-------------|
+| 1 | Node Exporter | Always - every Linux system needs this |
+| 2 | Blackbox Exporter | When monitoring website uptime from outside |
+| 3 | MySQL/PostgreSQL Exporter | When monitoring databases |
+| 4 | Nginx/Apache Exporter | When monitoring web servers |
+| 5 | Rsyslog Exporter | For centralized logging projects |
+| 6 | cAdvisor + kube-state-metrics | For Kubernetes monitoring |
 
 
 
