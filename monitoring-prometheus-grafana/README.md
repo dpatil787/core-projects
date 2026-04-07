@@ -184,9 +184,7 @@ chown prometheus:prometheus /usr/local/bin/promtool
 ```
 
 ```bash
-# Copy web console files used by Prometheus web UI
-cp -r consoles /etc/prometheus/
-cp -r console_libraries /etc/prometheus/
+# Copy configuration file used by Prometheus web UI
 cp prometheus.yml /etc/prometheus/prometheus.yml
 ```
 
