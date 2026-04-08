@@ -814,4 +814,4 @@ This setup can be further extended with:
 
 
 
-*Document prepared as part of DevOps Home Lab — Linux Server Configuration *
+*Document prepared as part of DevOps Home Lab*
