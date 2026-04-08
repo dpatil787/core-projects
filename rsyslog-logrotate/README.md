@@ -9,7 +9,6 @@
 
 ## Project Overview
 
-## Project Summary
 In a production environment, logs are scattered across many different servers. It is not practical to log into every machine individually to troubleshoot issues. This project builds a complete centralized logging and monitoring solution from scratch — collecting logs from multiple client machines, making them searchable through Loki, and visualizing them alongside system metrics in Grafana.
 
 ---
