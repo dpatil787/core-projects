@@ -10,8 +10,6 @@
 ## Project Overview
 
 ## Project Summary
-Implemented a centralized logging system using Rsyslog with disk queue reliability and log rotation. Logs are aggregated from multiple clients into a single server and integrated with Loki for monitoring.
-
 In a production environment, logs are scattered across many different servers. It is not practical to log into every machine individually to troubleshoot issues. This project builds a complete centralized logging and monitoring solution from scratch — collecting logs from multiple client machines, making them searchable through Loki, and visualizing them alongside system metrics in Grafana.
 
 ---
