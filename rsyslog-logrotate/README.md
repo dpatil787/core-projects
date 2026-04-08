@@ -68,16 +68,17 @@ VM3 (prometheus) ─────────────────────
 
 ---
 
+---
+
 ## Technology Stack
 
-| Tool | Version | Purpose |
+| Tool | Role | VM |
 |---|---|---|
-| Rsyslog | Default RHEL 9 | Centralized log collection and storage |
-| Promtail | v2.9.9 | Log file reader — reads and pushes logs to Loki |
-| Loki | v3.x | Log aggregation system with indexing and search |
-| Prometheus | v3.10.0 | Metrics collection and storage |
-| Grafana | Latest OSS | Visualization and dashboard |
-| Logrotate | System default | Automated log compression and rotation |
+| Rsyslog | Centralized log collection and storage | VM1 |
+| Promtail | Log file reader — reads and forwards logs to Loki | VM1 |
+| Loki | Log aggregation system with indexing and search | VM2 |
+| Prometheus | Metrics collection and storage | VM3 |
+| Grafana | Visualization and dashboard for logs and metrics | VM3 |
 
 ---
 
@@ -97,6 +98,8 @@ Installed Loki on VM2 for log storage and indexing. Installed Promtail on VM1 (w
 
 ### Phase 5 — Metrics and Dashboard (Prometheus + Grafana)
 Installed Prometheus on VM3 for metrics collection. Installed Grafana on VM3 and configured both Prometheus and Loki as data sources. Grafana dashboard provides visibility into both metrics and logs from a single location.
+
+---
 
 ---
 
@@ -172,6 +175,24 @@ logger "Hello from Client"
 ```
 Check on VM1 — client folder should appear under `/var/log/`
 
+```
+Dynamic Client Log Folders Created Automatically
+/var/log/
+├── loki/
+│   ├── rsyslogd.log
+│   ├── sshd.log
+│   └── root.log
+├── prometheus/
+│   ├── rsyslogd.log
+│   └── root.log
+└── rsyslogserver/
+    └── rsyslogd.log
+```
+
+![Client Log Folders](images/1-Client%20log%20folders.png)
+
+
+
 ---
 
 ### Phase 2 — Disk Queue Configuration (VM2 and VM3)
@@ -199,6 +220,14 @@ sudo mkdir -p /var/lib/rsyslog/
 sudo chown rsyslog:rsyslog /var/lib/rsyslog/
 systemctl restart rsyslog
 ```
+```
+Disk Queue Files on Client (when server is stopped)
+/var/lib/rsyslog/
+└── rsyslog_queue.qi    ← queue index file created automatically when server is unreachable
+```
+
+![Queue Files](images/2-queuefiles.PNG)
+
 
 ---
 
@@ -238,6 +267,14 @@ vim /etc/logrotate.d/rsyslog_custom
 logrotate -f /etc/logrotate.d/rsyslog_custom
 ls -lrth /var/log/loki/
 ```
+```
+ Logrotate Output
+/var/log/loki/
+├── root.log            ← current active log
+├── root.log.1          ← yesterday's rotated log
+└── root.log.2.gz       ← day before, compressed
+```
+![Logrotate Rotated Files](images/3-Logrotate%20rotated%20files.PNG)
 
 ---
 
@@ -366,6 +403,7 @@ systemctl status loki
 curl http://localhost:3100/ready
 # Expected output: ready
 ```
+![Loki Ready](images/4-lokiready.PNG)
 
 ---
 
@@ -473,6 +511,11 @@ sudo systemctl enable promtail
 sudo systemctl start promtail
 sudo systemctl status promtail
 ```
+ Loki Labels Confirmed via API
+```bash
+curl -s "http://localhost:3100/loki/api/v1/labels"
+```
+![Curl Success](images/5-curlsuccess.PNG)
 
 ---
 
@@ -553,6 +596,8 @@ promtool check config /etc/prometheus/prometheus.yml
 Access Prometheus at `http://192.168.253.130:9090` → Status → Targets
 
 ---
+![Prometheus Metrics](images/7-prom-metrics.PNG)
+
 
 ### Phase 5 — Grafana Installation (VM3)
 
@@ -602,62 +647,34 @@ Default login: `admin / admin` — change password on first login.
 - Click Save & test
 
 ---
+![Grafana Data Source](images/8-grafanadtasource.PNG)
 
-## Output
 
-### Phase 1 — Dynamic Client Log Folders Created Automatically
-```
-/var/log/
-├── loki/
-│   ├── rsyslogd.log
-│   ├── sshd.log
-│   └── root.log
-├── prometheus/
-│   ├── rsyslogd.log
-│   └── root.log
-└── rsyslogserver/
-    └── rsyslogd.log
-```
-
-### Phase 2 — Disk Queue Files on Client (when server is stopped)
-```
-/var/lib/rsyslog/
-└── rsyslog_queue.qi    ← queue index file created automatically when server is unreachable
-```
-
-### Phase 3 — Logrotate Output
-```
-/var/log/loki/
-├── root.log            ← current active log
-├── root.log.1          ← yesterday's rotated log
-└── root.log.2.gz       ← day before, compressed
-```
-
-### Phase 4 — Loki Labels Confirmed via API
-```bash
-curl -s "http://localhost:3100/loki/api/v1/labels" | python3 -m json.tool
-```
-```json
-{
-    "status": "success",
-    "data": [
-        "filename",
-        "hostname",
-        "job",
-        "service_name"
-    ]
-}
-```
-`hostname`, `job`, `filename` labels visible = Promtail → Loki pipeline fully working.
-
-### Phase 5 — Grafana LogQL Queries Working
+**Grafana LogQL Queries:**
 ```logql
-{job="rsyslog"}                                       # All logs — 3.75K logs visible
-{job="rsyslog", hostname="rsyslogserver"}             # Specific host logs
-{job="rsyslog"} |= "error"                           # Error logs only
-{job="rsyslog"} |= "DEBUG"                           # Debug logs
-{job="rsyslog", hostname="prometheus"} |= "error"    # Host + severity combined filter
+{job="rsyslog"}                                      # All logs
+{job="rsyslog", hostname="rsyslogserver"}            # Specific host
+{job="rsyslog"} |= "error"                          # Error logs only
+{job="rsyslog"} |= "DEBUG"                          # Debug logs
 ```
+![Grafana Dashboard](images/9-grafanadashboard.png)
+
+---
+
+## Troubleshooting
+
+| Issue | Cause | Fix |
+|---|---|---|
+| Logs not arriving on VM1 | Firewall blocking port 514 | `firewall-cmd --permanent --add-port=514/tcp --reload` on VM1 |
+| Loki service fails with 203/EXEC | Wrong SELinux context after moving binary from /tmp | `restorecon -v /usr/local/bin/loki` |
+| Promtail service fails with 203/EXEC | Same SELinux issue as Loki | `restorecon -v /usr/local/bin/promtail` |
+| Loki config validation errors | Schema or store version mismatch for Loki 3.x | Use `schema: v13`, `store: tsdb`, add `allow_structured_metadata: false` |
+| Promtail permission denied errors | `__path__` too broad — targeting system log folders | Restrict to `/var/log/{rsyslogserver,loki,prometheus}/*.log` |
+| Port 3100 already in use | Stale Loki process from previous failed start | `kill -9 <pid>` then start via systemd |
+| Loki "Ingester not ready" on first start | Normal startup delay | Wait 15-20 seconds, then curl again |
+| No logs in Grafana | Time range too narrow | Change from "Last 1 hour" to "Last 24 hours" |
+| Grafana cannot reach Loki | Wrong URL in data source | Use `http://192.168.253.129:3100` not localhost |
+| promtool check fails | YAML indentation error in prometheus.yml | Check spacing — YAML is space-sensitive |
 
 ---
 
@@ -681,23 +698,13 @@ curl -s "http://localhost:3100/loki/api/v1/labels" | python3 -m json.tool
 
 ---
 
-## Troubleshooting
+## Key Learnings
 
-| Issue | Cause | Fix |
-|---|---|---|
-| Logs not arriving on VM1 | Firewall blocking port 514 | `firewall-cmd --permanent --add-port=514/tcp --reload` on VM1 |
-| Loki service fails with 203/EXEC | Wrong SELinux context after moving binary from /tmp | `restorecon -v /usr/local/bin/loki` |
-| Promtail service fails with 203/EXEC | Same SELinux issue as Loki | `restorecon -v /usr/local/bin/promtail` |
-| Loki config validation errors | Schema or store version mismatch for Loki 3.x | Use `schema: v13`, `store: tsdb`, add `allow_structured_metadata: false` |
-| Promtail permission denied errors | `__path__` too broad — targeting system log folders | Restrict to `/var/log/{rsyslogserver,loki,prometheus}/*.log` |
-| Port 3100 already in use | Stale Loki process from previous failed start | `kill -9 <pid>` then start via systemd |
-| Loki "Ingester not ready" on first start | Normal startup delay | Wait 15-20 seconds, then curl again |
-| No logs in Grafana | Time range too narrow | Change from "Last 1 hour" to "Last 24 hours" |
-| Grafana cannot reach Loki | Wrong URL in data source | Use `http://192.168.253.129:3100` not localhost |
-| promtool check fails | YAML indentation error in prometheus.yml | Check spacing — YAML is space-sensitive |
+- Promtail should be installed on the same machine where logs are stored — reads locally, pushes remotely. Installing on a different machine would require NFS mount and adds unnecessary complexity.
+ - Binaries moved from `/tmp` must have SELinux context restored using `restorecon` — otherwise systemd throws `203/EXEC` error.
+- Disk queues on Rsyslog clients ensure zero log loss during server downtime.
 
 ---
-
 ## What's Next
 
 This setup can be further extended with:
@@ -708,6 +715,5 @@ This setup can be further extended with:
 - **Replication Monitoring** — Add a replica database server and monitor replication lag through Prometheus
 - **Ansible Automation** — Automate Promtail and Rsyslog client deployment across multiple nodes using Ansible playbooks
 
----
+This project is part of the DevOps Home Lab
 
-*Document prepared as part of DevOps Home Lab*
