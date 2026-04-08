@@ -81,6 +81,7 @@ VM3 (prometheus) ─────────────────────
 | Grafana | Visualization and dashboard for logs and metrics | VM3 |
 
 "Promtail is EOL but still works. We used it because it is stable and sufficient for this lab. Grafana Alloy is the modern alternative."
+
 ---
 
 ## Project Phases
