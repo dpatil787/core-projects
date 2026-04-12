@@ -431,7 +431,7 @@ sudo restorecon -v /usr/local/bin/promtail
 
 **Create user and directory:**
 ```bash
-sudo useradd -r -s /sbin/nologin promtail
+sudo useradd --no-create-home --shell /usr/bin/nologin
 sudo mkdir -p /var/lib/promtail
 sudo chown -R promtail:promtail /var/lib/promtail
 ```
