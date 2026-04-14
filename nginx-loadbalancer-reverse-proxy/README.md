@@ -10,9 +10,15 @@
 
 ## Project Overview
 
-This project builds a complete web application infrastructure with Nginx as reverse proxy and load balancer, backend web servers hosting a custom website, and a full observability stack including metrics, logs, and alerts. The entire system is monitored in real time, and failures trigger automatic alerts.
+This project builds a complete web application infrastructure with Nginx as a reverse proxy and load balancer, backend web servers hosting a custom website, and a full observability stack including metrics, logs, and alerts. The entire system is monitored in real time, and failures trigger automatic alerts.
 
-> I built a complete web application stack with Nginx as reverse proxy and load balancer, backend web servers with SSL, and full observability using Prometheus, Grafana, Loki, and Alertmanager. When I simulated a backend failure, the system detected it within 30 seconds, showed error logs in Grafana, and sent a Slack alert. This is exactly how production systems are monitored.
+## 🚀 Quick Summary
+
+- Built NGINX reverse proxy + load balancer (2 backend servers)
+- Implemented full monitoring using Prometheus + Grafana
+- Implemented centralized logging using Loki + Promtail
+- Configured alerting using Alertmanager + Slack
+- Simulated backend failure → alert triggered within 30 sec
 
 ---
 
@@ -172,7 +178,7 @@ Verify HTTPS:
 curl -k https://192.168.253.128
 ```
 
-If HTML content appears in output, HTTPS is working.
+If HTML content appears in the output, HTTPS is working.
 
 **Official Nginx Documentation:**
 - HTTP module: https://nginx.org/en/docs/http/ngx_http_core_module.html
@@ -191,7 +197,9 @@ Add:
 192.168.253.130 www.infinitesite.com
 ```
 
-Open `https://www.infinitesite.com` in browser. Website loads with SSL on both VMs. Add the same entry on your Windows host machine if testing from there.
+Open `https://www.infinitesite.com` in a browser. Website loads with SSL on both VMs. Add the same entry on your Windows host machine if testing from there.
+
+![Website Working](./images/1-websiteworking.PNG)
 
 ---
 
@@ -208,7 +216,7 @@ Internet → VM2 (reverse proxy) → VM1 or VM3 → response back to user
 
 Install Nginx and make sure the service is active and running.
 
-Open firewall for service HTTP and HTTPS and reload firewall.
+Open firewall for HTTP and HTTPS, and reload the firewall.
 
 ### Step 2 — Set SELinux to Permissive on VM2
 
@@ -232,7 +240,7 @@ VM2 is the entry point for all HTTPS traffic. It needs its own SSL certificate s
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/pki/tls/private/server.key -out /etc/pki/tls/certs/server.crt
 ```
 
-When asked for Common Name (CN) enter: `www.infinitesite.com`. CN must match the domain name users type in the browser.
+When asked for Common Name (CN), enter: `www.infinitesite.com`. CN must match the domain name users type in the browser.
 
 ### Step 4 — Configure Reverse Proxy with Load Balancing
 
@@ -289,6 +297,8 @@ curl -I -k https://www.infinitesite.com
 
 Expected: `HTTP/1.1 200 OK`
 
+![Reverse Proxy](./images/2-reverseproxy.PNG)
+
 Open browser: `https://www.infinitesite.com` — website loads. Accept self-signed cert warning.
 
 ### Step 5 — Load Balancing Verification
@@ -326,6 +336,7 @@ Example log entry:
 ```
 192.168.253.129 - - "GET /img/infinite-loop-01.jpg" 200
 ```
+![Loki Logs](./images/3-lblogs.PNG)
 
 This confirms Round Robin load balancing is working correctly.
 
@@ -348,7 +359,7 @@ mkdir -p /var/lib/loki/rules
 chown -R loki:loki /var/lib/loki
 ```
 
-Open firewall for port 3100/tcp and reload firewall.
+Open firewall for port 3100/tcp and reload the firewall.
 
 Create config file at `/etc/loki-config.yaml`:
 
@@ -401,7 +412,7 @@ RestartSec=5
 WantedBy=multi-user.target
 ```
 
-Reload daemon, start and enable Loki service, and make sure the service is active and running.
+Reload the daemon, start and enable the Loki service, and make sure the service is active and running.
 
 Verify:
 
@@ -417,6 +428,9 @@ Check API before Promtail is installed:
 curl http://192.168.253.136:3100/loki/api/v1/labels
 ```
 
+![Loki Curl](./images/4-lokicurl.PNG)
+
+
 Expected: `{"status":"success"}` — labels will be empty here. They appear after Promtail sends logs.
 
 ---
@@ -428,7 +442,7 @@ Expected: `{"status":"success"}` — labels will be empty here. They appear afte
 VM2 is the load balancer. All incoming traffic passes through VM2 first. VM2 Nginx logs every request including 502 errors when backends go down. Installing Promtail on VM2 reads these logs directly from local disk. No network dependency, no NFS mount needed.
 
 ```
-VM2 Promtail reads local logs → pushes to VM4 Loki over network → Grafana displays
+VM2 Promtail reads local logs → pushes to VM4 Loki over the network → Grafana displays
 ```
 
 ```bash
@@ -445,7 +459,7 @@ sudo chown -R promtail:promtail /var/lib/promtail
 sudo chown -R promtail:promtail /etc/promtail
 ```
 
-Add promtail user to nginx group so it can read Nginx log files:
+Add promtail user to the nginx group so it can read Nginx log files:
 
 ```bash
 sudo usermod -a -G nginx promtail
@@ -498,9 +512,9 @@ StandardError=journal
 WantedBy=multi-user.target
 ```
 
-Reload daemon, start and enable Promtail service, and make sure the service is active and running.
+Reload the daemon, start and enable the Promtail service, and make sure the service is active and running.
 
-Open firewall for port 9080/tcp and reload it.
+Open firewall for port 9080/tcp & reload it.
 
 Verify Promtail is reading logs:
 
@@ -508,7 +522,7 @@ Verify Promtail is reading logs:
 journalctl -u promtail -f
 ```
 
-Generate traffic by refreshing `https://www.infinitesite.com` in browser. Look for `Seeked` and `tail routine started` messages.
+Generate traffic by refreshing `https://www.infinitesite.com` in the browser. Look for `Seeked` and `tail routine started` messages.
 
 Verify labels reached Loki:
 
@@ -530,6 +544,8 @@ Expected output shows file paths and byte offsets:
 /var/log/nginx/access.log: "150208"
 /var/log/nginx/error.log: "4217"
 ```
+
+![Promtail Configured](./images/5-promtailconfigured.PNG)
 
 ---
 
@@ -554,7 +570,7 @@ restorecon -v /usr/local/bin/promtool
 cp prometheus.yml /etc/prometheus/prometheus.yml
 ```
 
-> Note: Prometheus uses tarball installation because no official DNF repository exists for RHEL. Grafana uses DNF because an official repository exists for it.
+> Note: Prometheus uses tarball installation because no official DNF repository exists for RHEL. Grafana uses DNF because an official repository exists.
 
 Create service at `/etc/systemd/system/prometheus.service`:
 
@@ -574,17 +590,20 @@ ExecStart=/usr/local/bin/prometheus --config.file=/etc/prometheus/prometheus.yml
 WantedBy=multi-user.target
 ```
 
-Reload daemon and start Prometheus service. Make sure the service is in active and running status.
+Reload the daemon and start the Prometheus service. Make sure the service is active and running status.
 
-Open firewall for port 9090/tcp (Prometheus) and reload firewall.
+Open firewall for port 9090/tcp (Prometheus) and reload the firewall.
 
 Access Prometheus at: `http://192.168.253.136:9090`
+
+![Prometheus Configured](./images/6-prometheusconfigured.PNG)
+
 
 ---
 
 ## Phase 6 — Node Exporter on All VMs (VM1, VM2, VM3, VM4)
 
-Node Exporter collects system-level metrics from each machine — CPU, RAM, disk, network. It exposes these as an HTTP endpoint that Prometheus scrapes every 15 seconds.
+Node Exporter collects system-level metrics from each machine — CPU, RAM, disk, and network. It exposes these as an HTTP endpoint that Prometheus scrapes every 15 seconds.
 
 Install and run these steps on each VM separately.
 
@@ -619,9 +638,9 @@ WantedBy=multi-user.target
 
 > `--collector.systemd` flag enables collection of systemd service states. This is what allows Prometheus to know if Nginx service is active or stopped. This flag is critical for the alert rule to work.
 
-Reload daemon and start, enable node_exporter service. Make sure the service is running and active.
+Reload the daemon and start, enable the node_exporter service. Make sure the service is running and active.
 
-Open firewall for node_exporter (9100/tcp) on each VM and reload firewall.
+Open firewall for node_exporter (9100/tcp) on each VM & reload firewall.
 
 Verify metrics endpoint on each VM — a long list of metrics should appear on each URL:
 
@@ -633,6 +652,8 @@ http://192.168.253.136:9100/metrics
 ```
 
 Add all Node Exporters as scrape targets in Prometheus config on VM4:
+
+
 
 ```bash
 vim /etc/prometheus/prometheus.yml
@@ -650,9 +671,11 @@ Add under `scrape_configs`:
           - '192.168.253.136:9100'
 ```
 
-Restart Prometheus service.
+Restart the Prometheus service.
 
 Verify at `http://192.168.253.136:9090` → Status → Targets. All four Node Exporter targets should show state UP.
+
+![Prometheus Node Exporters](./images/7-prometheusnodeexporters.PNG)
 
 ---
 
@@ -681,7 +704,7 @@ dnf makecache -y
 dnf install grafana -y
 ```
 
-Start and enable grafana-server service and make sure the service is up and running.
+Start and enable the Grafana-server service and make sure service is up and running.
 
 Open firewall for Grafana port 3000/tcp and reload firewall.
 
@@ -700,8 +723,13 @@ Import community dashboard ID `1860` for Node Exporter metrics. If direct import
 
 Upload manually: Dashboards → Import → Upload JSON file → Select Prometheus → Import
 
+![Linux VM Health Dashboard](./images/8-linuxvmhealthdashboard.PNG)
+
+
 **Dashboard B — Nginx Logs:**
 Dashboards → New Dashboard → Add visualization → Select Loki → Switch to Code mode
+
+![Nginx Logs Monitoring](./images/9-nginxlogsmonitoring.PNG)
 
 Query: `{job="nginx"}` → Change visualization type to Logs.
 
@@ -725,7 +753,7 @@ Alertmanager handles alerts sent by Prometheus. It deduplicates, groups, and rou
 
 | Without Alertmanager | With Alertmanager |
 |---|---|
-| Prometheus stores metrics, no one gets notified | Prometheus sends alert to Alertmanager, Slack message sent automatically |
+| Prometheus stores metrics, no one gets notified | Prometheus sends an alert to Alertmanager, a Slack message is sent automatically |
 
 **Alertmanager components:**
 
@@ -799,7 +827,7 @@ Restart=always
 WantedBy=multi-user.target
 ```
 
-Start and enable Alertmanager service and make sure the service is up and running.
+Start and enable the Alertmanager service and make sure service is up and running.
 
 Open firewall for Alertmanager for port 9093/tcp and reload firewall.
 
@@ -877,6 +905,8 @@ Verify alert rule is loaded: `http://192.168.253.136:9090/alerts`
 
 `NginxServiceDown` should appear with state `Inactive` because Nginx is currently running.
 
+![Alert Rule](./images/10-alertrule.PNG)
+
 ---
 
 ## Phase 10 — Demo and Failure Simulation
@@ -899,11 +929,18 @@ systemctl stop nginx
 | First 15 seconds | Prometheus detects Nginx is down. Alert status = **Pending** |
 | Next 15 seconds | Alert remains Pending (waiting for the 30s threshold) |
 | After 30 seconds | Alert status changes to **Firing** |
+
+![Alert Firing](./images/11-alertfiring.png)
+
+
 | Immediately after | Alertmanager sends message to Slack `#alerts` |
 
-5. Check Slack — firing notification received
-6. Open Grafana Loki dashboard — Nginx logs still show 200 OK responses (VM3 is serving traffic, no downtime)
-7. Start Nginx on VM1:
+5. Check Slack — Service Down notification received
+
+![Slack Alert](./images/12-slackalert.PNG)
+
+7. Open Grafana Loki dashboard — Nginx logs still show 200 OK responses (VM3 is serving traffic, no downtime)
+8. Start Nginx on VM1:
 
 ```bash
 systemctl start nginx
@@ -912,13 +949,15 @@ systemctl start nginx
 8. Wait — Prometheus detects Nginx is running. Alert changes from Firing to Inactive
 9. Check Slack — resolved notification received automatically
 
+![Slack Resolve Alert](./images/13-slackresolvealert.PNG)
+
 This complete cycle demonstrates end-to-end observability from failure detection to notification to recovery confirmation, with the load balancer ensuring zero downtime.
 
 ---
 
 ## Troubleshooting
 
-Based on challenges faced during this project.
+Based on the challenges faced during this project.
 
 | Issue | Cause | Fix |
 |---|---|---|
