@@ -178,9 +178,6 @@ cd prometheus-3.10.0.linux-amd64
 cp prometheus /usr/local/bin/
 cp promtool /usr/local/bin/
 
-restorecon -v /usr/local/bin/prometheus
-restorecon -v /usr/local/bin/promtool
-
 # Set ownership to prometheus user
 chown prometheus:prometheus /usr/local/bin/prometheus
 chown prometheus:prometheus /usr/local/bin/promtool
@@ -817,4 +814,4 @@ This setup can be further extended with:
 
 
 
-*Document prepared as part of DevOps Home Lab*
+*Document prepared as part of DevOps Home Lab — Linux Server Configuration *
